@@ -1,0 +1,10 @@
+INSERT INTO stations (name) VALUES ('Bedok MRT');
+INSERT INTO stations (name) VALUES ('Tampines MRT');
+INSERT INTO stations (name) VALUES ('City Hall MRT');
+INSERT INTO stations (name) VALUES ('Serangoon MRT');
+INSERT INTO stations (name) VALUES ('Sengkang MRT');
+INSERT INTO stations (name) VALUES ('Punggol MRT');
+INSERT INTO stations (name) VALUES ('Kent Ridge MRT');
+INSERT INTO stations (name) VALUES ('Pioneer MRT');
+INSERT INTO stations (name) VALUES ('Dhoby Ghaut MRT');
+INSERT INTO stations (name) VALUES ('Choa Chu Kang MRT');
