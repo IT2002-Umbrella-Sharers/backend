@@ -1,16 +1,19 @@
-import names
+import pickle
 import random
 import string
 import datetime
 
-def generate_users(n, filename):
+def get_name(names):
+    return random.choice(names)
+
+def generate_users(n, first_names, last_names, filename):
     def generate_valid_email_address():
-        first_name = names.get_first_name()
-        last_name = names.get_last_name()
+        first_name = get_name(first_names)
+        last_name = get_name(last_names)
         email = first_name + last_name + random.choice(domain_names)
         while email in emails:
-            first_name = names.get_first_name()
-            last_name = names.get_last_name()
+            first_name = get_name(first_names)
+            last_name = get_name(last_names)
             email = first_name + last_name + random.choice(domain_names)
         emails.append(email)
         return first_name, last_name, email
@@ -80,7 +83,12 @@ def generate_reports(n, users, umbrellas, filename):
             f.write(f"INSERT INTO reports (umbrella_id, reporter, details, date) VALUES ({umbrella}, '{reporter}', '{fault}', '{date}');\n")
 
 if __name__ == "__main__":
-    emails = generate_users(50, "UUsers.sql")
+    random.seed(10) # set seed
+    with open("first_names", "rb") as fp:
+        first_names = pickle.load(fp)
+    with open("last_names", "rb") as fp:
+        last_names = pickle.load(fp)
+    emails = generate_users(50, first_names, last_names, "UUsers.sql")
     station_ids = generate_stations("UStations.sql")
     umbrella_ids = generate_umbrellas(200, emails, station_ids, "UUmbrellas.sql")
     generate_loans(400, emails, umbrella_ids, "ULoans.sql")
