@@ -62,13 +62,13 @@ def generate_loans(n, users, umbrellas, filename):
     with open(filename, 'w') as f:
         for _ in range(n):
             umbrella = random.choice(umbrellas)
-            borrower, lender = random.sample(users, 2)
+            borrower = random.choice(users)
             start_date = random.random() * (end - start) + start
             if random.randint(1, 2) == 1:
-                f.write(f"INSERT INTO loans (umbrella_id, borrower, lender, start_date) VALUES ({umbrella}, '{borrower}', '{lender}', '{start_date.strftime('%Y-%m-%d %H:%M:%S')}');\n")
+                f.write(f"INSERT INTO loans (umbrella_id, borrower, start_date) VALUES ({umbrella}, '{borrower}', '{start_date.strftime('%Y-%m-%d %H:%M:%S')}');\n")
             else:
                 end_date = start_date + random.random() * datetime.timedelta(days=7)
-                f.write(f"INSERT INTO loans (umbrella_id, borrower, lender, start_date, end_date) VALUES ({umbrella}, '{borrower}', '{lender}', '{start_date.strftime('%Y-%m-%d %H:%M:%S')}', '{end_date.strftime('%Y-%m-%d %H:%M:%S')}');\n")
+                f.write(f"INSERT INTO loans (umbrella_id, borrower, start_date, end_date) VALUES ({umbrella}, '{borrower}', '{start_date.strftime('%Y-%m-%d %H:%M:%S')}', '{end_date.strftime('%Y-%m-%d %H:%M:%S')}');\n")
 
 def generate_reports(n, users, umbrellas, filename):
     start = datetime.datetime(2022, 1, 1)

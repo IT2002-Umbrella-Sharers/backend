@@ -38,13 +38,10 @@ CREATE TABLE IF NOT EXISTS loans (
         ON UPDATE CASCADE,
     borrower VARCHAR(64) NOT NULL REFERENCES users(email_address)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    lender VARCHAR(64) NOT NULL REFERENCES users(email_address)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        ON UPDATE CASCADE,,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP
-    -- CHECK (start_date < end_date)
+    CHECK (start_date < end_date)
 );
 
 CREATE TABLE IF NOT EXISTS reports (
