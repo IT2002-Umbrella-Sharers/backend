@@ -1,10 +1,10 @@
 /*******************
 	  Login
 ********************/
---Register an Account--
+--Register an Account-- DONE
 INSERT INTO users (email_address, first_name, last_name, password) 
-VALUES ('PLACEHOLDER@hotmail.com', 'PLACE', 'HOLDER', 'plCHLDR');
---Get list of locations--
+VALUES ('PLACEHOLDER@hotmail.com', 'PLACE', 'HOLDER', 'PLCHLDR');
+--Get list of locations-- DONE
 SELECT name
 FROM stations;
 --Get User ID on login--
@@ -15,21 +15,21 @@ WHERE email_address = email_address AND password = password; --should return emp
       Home Page
 ********************/
 --Get User Current Balance (covered above)--
---Top Up Balance--
+--Top Up Balance-- DONE
 UPDATE users
 SET balance=balance-200
 WHERE email_address = 'PLACEHOLDER@hotmail.com';
---What umbrellas user is currently borrowing--
+--What umbrellas user is currently borrowing-- DONE
 SELECT l.start_date,u.colour,u.size,s.name --Can we just use umbrella_id and start_date as a primary key?
 FROM loans l, umbrellas u,stations s
 WHERE l.borrower = 'PLACEHOLDER@hotmail.com' AND l.umbrella_id = u.id 
 AND u.location = s.id AND l.end_date ISNULL;
---Current status of user's umbrellas--
+--Current status of user's umbrellas-- DONE
 SELECT u.colour, u.size, s.name
-FROM umbrellas u, stations s
+FROM umbrellas u, stations s, loans l
 WHERE u.location = s.id AND u.owner = 'PLACEHOLDER@hotmail.com';
---Return Umbrella--
-SELECT l.umbrella_id, l.borrower, u.owner
+--Return Umbrella-- DONE
+SELECT l.umbrella_id, l.borrower, u.owner, EXTRACT(DAY from end_date-start_date)+1 as days
 FROM loans l, umbrellas u
 WHERE id = 1 AND l.umbrella_id = u.id; --collect info
 
@@ -38,18 +38,15 @@ SET location = 1
 WHERE id = loans.umbrella_id;
 
 UPDATE loans  --set loan end date--
-SET end_date = '2023-01-01 01:23:45';
-
-SELECT EXTRACT(DAY from end_date-start_date)+1 as days --number of days inclusive since borrowing
-FROM loans
+SET end_date = '2023-01-01 01:23:45'
 WHERE id = 1;
 
 UPDATE users --subtract fees
-SET balance = balance-days
+SET balance = balance-days*0.1
 WHERE email_address = borrower;
 
 UPDATE users --add credit
-SET balance = balance + days*0.7
+SET balance = balance + days*0.07
 WHERE email_address = owner;
 --Submit Report--
 INSERT INTO reports (umbrella_id, reporter, details, date)
