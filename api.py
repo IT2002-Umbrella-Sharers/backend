@@ -67,7 +67,7 @@ def loaned_umbrellas(email):
         return (generate_table_return_result(res)) #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
     except:
         return "ERROR"
-
+        
 def return_umbrella(loan_id,date,return_location): #jesus christ
     try:
         statement = sqlalchemy.text(f"SELECT l.umbrella_id, l.borrower, u.owner, EXTRACT(DAY from end_date-start_date)+1 as days FROM loans l, umbrellas u WHERE l.id = {loan_id} AND l.umbrella_id = u.id;")
@@ -75,16 +75,10 @@ def return_umbrella(loan_id,date,return_location): #jesus christ
         db.commit()
         data = generate_table_return_result(data)
         umbrella_id, borrower_email, owner_email, days = data[0]['umbrella_id'],data[0]['borrower'],data[0]['owner'],data[0]['days']
-        statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id};")
-        data = db.execute(statement)
-        db.commit()        
-        statement = sqlalchemy.text(f"UPDATE loans SET end_date = \'{date}\' WHERE id = {loan_id};")
-        data = db.execute(statement)
-        db.commit()
-        statement = sqlalchemy.text(f"UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\';")
-        data = db.execute(statement)
-        db.commit()
-        statement = sqlalchemy.text(f"UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';")
+        statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id};\
+                                    UPDATE loans SET end_date = \'{date}\' WHERE id = {loan_id};\
+                                    UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\';\
+                                    UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';")
         data = db.execute(statement)
         db.commit()
         return
