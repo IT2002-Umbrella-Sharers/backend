@@ -12,20 +12,24 @@ engine = sqlalchemy.create_engine(
 )
 db = engine.connect()
 
+#
+# login
+#
+
 def check_result_login(email,password): ##for logging in
     try:
         statement = sqlalchemy.text(f"SELECT * FROM users WHERE email_address = \'{email}\' AND password = \'{password}\';")
         res = db.execute(statement)
         db.commit()
         return (generate_table_return_result(res)) # returns a list containing a single dictionary with user details
-    except:
-        return "ERROR" #honestly not sure why this is here but just in case - if you obtain from 
+    except Exception as e:
+        return e #honestly not sure why this is here but just in case - if email or password dont exist it returns an empty list
 
 def check_result_register(email,password,confirm,first_name,last_name): #need first name last name in frontend btw
     if password != confirm: #check if password is same as confirm? i guess?
         return False
     try:
-        statement = sqlalchemy.text(f"INSERT INTO USERS (email_address,first_name,last_name,password) VALUES(\'{email}\',\'{first_name}\',\'{last_name}\',\'{password}\';)")
+        statement = sqlalchemy.text(f"INSERT INTO USERS (email_address,first_name,last_name,password) VALUES(\'{email}\',\'{first_name}\',\'{last_name}\',\'{password}\');")
         db.execute(statement)
         db.commit()
         return True
@@ -38,8 +42,12 @@ def get_locations(): # getting names of current location on login
         res = db.execute(statement)
         db.commit()
         return (generate_table_return_result(res)) # example: [{'name': 'Bedok MRT'}, {'name': 'Tampines MRT'}, {'name': 'City Hall MRT'},...
-    except:
-        return "ERROR"
+    except Exception as e:
+        return e
+
+# 
+# Home Page
+# 
 
 def top_up(email,amount):
     try:
@@ -47,8 +55,8 @@ def top_up(email,amount):
         db.execute(statement)
         db.commit()
         return # returns nothing.
-    except:
-        return "ERROR"
+    except Exception as e:
+        return e
 
 def current_borrows(email):
     try:
@@ -56,8 +64,8 @@ def current_borrows(email):
         res = db.execute(statement)
         db.commit()
         return (generate_table_return_result(res)) #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
-    except:
-        return "ERROR"
+    except Exception as e:
+        return e
 
 def loaned_umbrellas(email):
     try:
@@ -65,10 +73,10 @@ def loaned_umbrellas(email):
         res = db.execute(statement)
         db.commit()
         return (generate_table_return_result(res)) #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
-    except:
-        return "ERROR"
+    except Exception as e:
+        return e
         
-def return_umbrella(loan_id,date,return_location): #jesus christ
+def return_umbrella(loan_id,date,return_location): #jesus christ also for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
     try:
         statement = sqlalchemy.text(f'UPDATE loans SET end_date = \'{date}\' WHERE id = {loan_id};')
         db.execute(statement)
@@ -78,14 +86,100 @@ def return_umbrella(loan_id,date,return_location): #jesus christ
         db.commit()
         data = generate_table_return_result(data)
         umbrella_id, borrower_email, owner_email, days = data[0]['umbrella_id'],data[0]['borrower'],data[0]['owner'],data[0]['days']
-        statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id};\
-                                    UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\';\
-                                    UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';")
+        statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id}; UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\'; UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';") #need to convert days to int because its some weird format
         db.execute(statement)
         db.commit()
         return
     except Exception as e:
         return e
+
+def make_report(umbrella_id,reporter,details,date):
+    try:
+        statement = sqlalchemy.text(f"INSERT INTO reports (umbrella_id, reporter, details, date) VALUES ({umbrella_id},\'{reporter}\', \'{details}\', \'{date}\');")
+        db.execute(statement)
+        db.commit()
+        return True
+    except:
+        return False  
+
+# 
+# loan an umbrella
+# 
+
+def loan_umbrella(email,colour, size,location): #need first name last name in frontend btw
+    try:
+        statement = sqlalchemy.text(f"INSERT INTO umbrellas (colour, size, owner, location) VALUES (\'{colour}\', {size}, \'{email}\',{location});")
+        db.execute(statement)
+        db.commit()
+        return True
+    except Exception as e:
+        return e
+    
+# 
+# borrow an umbrella
+# 
+
+def which_umbrella(location):
+    try:
+        statement = sqlalchemy.text(f"SELECT id FROM umbrellas WHERE location = {location} AND id NOT IN(SELECT umbrella_id FROM loans WHERE end_date ISNULL and location = {location});") ## technically, I guess we don't need the second location check...
+        res = db.execute(statement)
+        db.commit()
+        return (generate_table_return_result(res)) #returns umbrellas which aren't on loan from a specific location
+    except Exception as e:
+        return e 
+def borrow_umbrella(umbrella_id,borrower,date):
+    try:
+        statement = sqlalchemy.text(f"INSERT INTO loans (umbrella_id, borrower, start_date, end_date) VALUES ({umbrella_id}, \'{borrower}\',\'{date}\',null);") 
+        db.execute(statement)
+        db.commit()
+        return 
+    except Exception as e:
+        return e 
+# 
+# admin
+# 
+
+def reports():
+    try:
+        statement = sqlalchemy.text(f"SELECT * from reports;")
+        res = db.execute(statement)
+        db.commit()
+        return (generate_table_return_result(res)) 
+    except Exception as e:
+        return e 
+
+def ban(email):
+    try:
+        statement = sqlalchemy.text(f"UPDATE users SET is_banned = TRUE WHERE email_address = \'{email}\';") #surprisingly enough boolean isnt caps sensitive...
+        db.execute(statement)
+        db.commit()
+        return
+    except Exception as e:
+        return e
+    
+def unban(email):
+    try:
+        statement = sqlalchemy.text(f"UPDATE users SET is_banned = FALSE WHERE email_address = \'{email}\';")
+        db.execute(statement)
+        db.commit()
+        return
+    except Exception as e:
+        return e
+
+def update_location(id,name):
+    try:
+        statement = sqlalchemy.text(f"UPDATE stations SET name=\'{name}\' WHERE id = \'{id}\';")
+        db.execute(statement)
+        db.commit()
+        return
+    except Exception as e:
+        return e
+
+
+
+# 
+# Misc functions
+#
 
 def generate_table_return_result(res): # returns a list containing several dictionaries depending on query size - keys are column names and values are...values
     rows = []
