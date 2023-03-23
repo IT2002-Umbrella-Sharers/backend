@@ -47,14 +47,14 @@ def topup():
     res = top_up(email, amount)
     return create_response(res, 200)
 
-@app.route('/borrows', methods=["POST"])
-def borrows():
+@app.route('/getborrows', methods=["POST"])
+def getborrows():
     email = request.form['email']
     res = current_borrows(email)
     return create_response(res, 200)
 
-@app.route('/loans', methods=["POST"])
-def loans():
+@app.route('/getloans', methods=["POST"])
+def getloans():
     email = request.form['email']
     res = loaned_umbrellas(email)
     return create_response(res, 200)
@@ -65,6 +65,84 @@ def returnumbrella():
     date = request.form['date']
     returnlocation = request.form['returnlocation']
     res = return_umbrella(loanid, date, returnlocation)
+    return create_response(res, 200)
+
+@app.route('/makereport', methods=["POST"])
+def makereport():
+    umbrellaid = request.form['umbrellaid']
+    reporter = request.form['reporter']
+    details = request.form['details']
+    date = request.form['date']
+    res = make_report(
+        umbrellaid, 
+        reporter,
+        details,
+        date
+    )
+    return create_response(res, 200)
+
+@app.route('/loanumbrella', methods=["POST"])
+def loanumbrella():
+    email = request.form['email']
+    colour = request.form['colour']
+    size = request.form['size']
+    location = request.form['location']
+    res = loan_umbrella(
+        email, 
+        colour,
+        size,
+        location
+    )
+    return create_response(res, 200)
+
+@app.route('/getumbrella', methods=["POST"])
+def getumbrella():
+    email = request.form['email']
+    colour = request.form['colour']
+    size = request.form['size']
+    location = request.form['location']
+    res = which_umbrella(
+        email, 
+        colour,
+        size,
+        location
+    )
+    return create_response(res, 200)
+
+@app.route('/borrowumbrella', methods=["POST"])
+def borrowumbrella():
+    umbrellaid = request.form['umbrellaid']
+    borrower = request.form['borrower']
+    date = request.form['date']
+    res = borrow_umbrella(
+        umbrellaid, 
+        borrower,
+        date
+    )
+    return create_response(res, 200)
+
+@app.route('/getreports', methods=["POST"])
+def getreports():
+    res = reports()
+    return create_response(res, 200)
+
+@app.route('/ban', methods=["POST"])
+def ban():
+    email = request.form['email']
+    res = ban(email)
+    return create_response(res, 200)
+
+@app.route('/unban', methods=["POST"])
+def unban():
+    email = request.form['email']
+    res = unban(email)
+    return create_response(res, 200)
+
+@app.route('/updatelocation', methods=["POST"])
+def updatelocation():
+    id = request.form['id']
+    name = request.form['name']
+    res = update_location(id, name)
     return create_response(res, 200)
 
 @app.route('/<path:path>')
