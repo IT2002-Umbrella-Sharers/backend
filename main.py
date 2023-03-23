@@ -4,7 +4,8 @@ from api import *
 
 app = Flask(__name__, template_folder='html', static_folder='static')
 
-def create_response(data, status):
+def create_response(res):
+    data, status = res
     return {'data': data}, status
 
 @app.route('/register', methods=["POST"])
@@ -19,7 +20,7 @@ def register():
         firstname,
         lastname
     )
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/login', methods=["POST"])
 def login():
@@ -29,31 +30,31 @@ def login():
         email,
         password
     )
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/getlocations', methods=["GET"])
 def getlocations():
     res = get_locations()
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/topup', methods=["POST"])
 def topup():
     email = request.form['email']
     amount = request.form['amount']
     res = top_up(email, amount)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/getborrows', methods=["POST"])
 def getborrows():
     email = request.form['email']
     res = current_borrows(email)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/getloans', methods=["POST"])
 def getloans():
     email = request.form['email']
     res = loaned_umbrellas(email)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/returnumbrella', methods=["POST"])
 def returnumbrella():
@@ -61,7 +62,7 @@ def returnumbrella():
     date = request.form['date']
     returnlocation = request.form['returnlocation']
     res = return_umbrella(loanid, date, returnlocation)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/makereport', methods=["POST"])
 def makereport():
@@ -75,7 +76,7 @@ def makereport():
         details,
         date
     )
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/loanumbrella', methods=["POST"])
 def loanumbrella():
@@ -89,7 +90,7 @@ def loanumbrella():
         size,
         location
     )
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/getumbrella', methods=["POST"])
 def getumbrella():
@@ -103,7 +104,7 @@ def getumbrella():
         size,
         location
     )
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/borrowumbrella', methods=["POST"])
 def borrowumbrella():
@@ -115,31 +116,31 @@ def borrowumbrella():
         borrower,
         date
     )
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/getreports', methods=["POST"])
 def getreports():
     res = reports()
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/ban', methods=["POST"])
 def ban():
     email = request.form['email']
     res = ban(email)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/unban', methods=["POST"])
 def unban():
     email = request.form['email']
     res = unban(email)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/updatelocation', methods=["POST"])
 def updatelocation():
     id = request.form['id']
     name = request.form['name']
     res = update_location(id, name)
-    return create_response(res, 200)
+    return create_response(res)
 
 @app.route('/<path:path>')
 def catch_all(path):
