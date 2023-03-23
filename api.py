@@ -81,7 +81,7 @@ def return_umbrella(loan_id,date,return_location): #jesus christ
         statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id};\
                                     UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\';\
                                     UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';")
-        data = db.execute(statement)
+        db.execute(statement)
         db.commit()
         return
     except Exception as e:
