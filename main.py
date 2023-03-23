@@ -1,12 +1,8 @@
-from flask import Flask, request, Response
-from flask_session import Session
+from flask import Flask, request
 from api import *
 
 
 app = Flask(__name__, template_folder='html', static_folder='static')
-SESSION_TYPE = 'filesystem'
-app.config.from_object(__name__)
-Session(app)
 
 def create_response(data, status):
     return {'data': data}, status
