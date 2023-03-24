@@ -50,20 +50,38 @@ def top_up(email,amount):
 
 def current_borrows(email):
     try:
-        statement = sqlalchemy.text(f"SELECT l.start_date,u.colour,u.size,s.name FROM loans l, umbrellas u,stations s WHERE l.borrower = \'{email}\' AND l.umbrella_id = u.id AND u.location = s.id AND l.end_date ISNULL;")
+        statement = sqlalchemy.text(f"""
+            SELECT l.id AS loan_id, u.id AS umbrella_id, uu.first_name, uu.last_name, u.owner,
+                s.name AS location_name, l.start_date, u.colour, u.size
+            FROM loans l, umbrellas u, stations s, users uu 
+            WHERE l.borrower = \'{email}\'
+            AND uu.email_address = u.owner
+            AND l.umbrella_id = u.id 
+            AND u.location = s.id 
+            AND l.end_date ISNULL;
+        """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
-        return res #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
-    except:
+        return res, 200 #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
+    except Exception as e:
+        print(e)
         return False, 400
 
 def loaned_umbrellas(email):
     try:
-        statement = sqlalchemy.text(f"SELECT u.colour, u.size, s.name FROM umbrellas u, stations s, loans l WHERE u.location = s.id AND u.owner = \'{email}\';")
+        statement = sqlalchemy.text(f"""
+            SELECT u.id, u.colour, u.size, s.name AS location, COUNT(l.end_date) AS is_borrowed
+            FROM umbrellas u, stations s, loans l
+            WHERE u.location = s.id
+            AND l.umbrella_id = u.id
+            AND u.owner = \'{email}\'
+            GROUP BY (u.id, u.colour, u.size, s.name);
+        """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
         return res, 200 #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
         
 def return_umbrella(loan_id,date,return_location): #jesus christ also for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others

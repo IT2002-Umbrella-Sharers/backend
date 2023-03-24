@@ -1,12 +1,26 @@
 from flask import Flask, request
 from api import *
+import json
+from decimal import Decimal
+import datetime
 
 
 app = Flask(__name__, template_folder='html', static_folder='static')
 
+# Child class of JSONEncoder that converts unserializable formats
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        elif isinstance(obj, datetime.datetime):
+            return obj.strftime("%d/%m/%Y %H:%M") 
+        return json.JSONEncoder.default(self, obj)
+
 def create_response(res):
     data, status = res
-    return {'data': data}, status
+    return json.dumps({'data': data, 'status': status }, cls=JSONEncoder)
+
+
 
 @app.route('/register', methods=["POST"])
 def register():
@@ -44,12 +58,14 @@ def topup():
     res = top_up(email, amount)
     return create_response(res)
 
+# Get loans for umbrellas borrowed from other users
 @app.route('/getborrows', methods=["POST"])
 def getborrows():
     email = request.form['email']
     res = current_borrows(email)
     return create_response(res)
 
+# Get umbrellas current loaned
 @app.route('/getloans', methods=["POST"])
 def getloans():
     email = request.form['email']
