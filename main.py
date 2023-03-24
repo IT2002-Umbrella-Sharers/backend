@@ -26,8 +26,8 @@ def create_response(res):
 def register():
     email = request.form['email']
     password = request.form['password']
-    firstname = request.form['firstname']
-    lastname = request.form['lastname']
+    firstname = request.form['first_name']
+    lastname = request.form['last_name']
     res = check_result_register(
         email,
         password,
