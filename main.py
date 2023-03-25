@@ -97,8 +97,6 @@ def makereport():
 
 @app.route('/loanumbrella', methods=["POST"])
 def loanumbrella():
-    for key in request.form:
-        print(key + ": ", request.form[key])
     email = request.form['email']
     colour = request.form['colour']
     size = request.form['size']
