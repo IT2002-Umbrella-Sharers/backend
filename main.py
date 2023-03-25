@@ -44,6 +44,7 @@ def login():
         email,
         password
     )
+    print(res)
     return create_response(res)
 
 @app.route('/getlocations', methods=["GET"])
@@ -96,6 +97,8 @@ def makereport():
 
 @app.route('/loanumbrella', methods=["POST"])
 def loanumbrella():
+    for key in request.form:
+        print(key + ": ", request.form[key])
     email = request.form['email']
     colour = request.form['colour']
     size = request.form['size']
@@ -110,14 +113,8 @@ def loanumbrella():
 
 @app.route('/getumbrella', methods=["POST"])
 def getumbrella():
-    email = request.form['email']
-    colour = request.form['colour']
-    size = request.form['size']
     location = request.form['location']
     res = which_umbrella(
-        email, 
-        colour,
-        size,
         location
     )
     return create_response(res)

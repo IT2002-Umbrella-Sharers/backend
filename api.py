@@ -4,7 +4,8 @@ import sqlalchemy
 YOUR_POSTGRES_PASSWORD = "a"
 connection_string = f"postgresql://postgres:{YOUR_POSTGRES_PASSWORD}@localhost/umbrella"
 engine = sqlalchemy.create_engine(
-    connection_string
+    connection_string, 
+    isolation_level="AUTOCOMMIT"
 )
 db = engine.connect()
 
@@ -20,7 +21,8 @@ def check_result_login(email,password): ##for logging in
         if len(res) == 0:
             return False, 400
         return {'user': res[0]}, 200 # returns a list containing a single dictionary with user details
-    except:
+    except Exception as e:
+        print(e)
         return False, 400 #honestly not sure why this is here but just in case - if you obtain from 
 
 def check_result_register(email,password,first_name,last_name): #need first name last name in frontend btw
@@ -28,7 +30,8 @@ def check_result_register(email,password,first_name,last_name): #need first name
         statement = sqlalchemy.text(f"INSERT INTO USERS (email_address,first_name,last_name,password) VALUES(\'{email}\',\'{first_name}\',\'{last_name}\',\'{password}\');")
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400 #catches if cannot insert into database for whatever reason
 
 def get_locations(): # getting names of current location on login
@@ -37,7 +40,8 @@ def get_locations(): # getting names of current location on login
         res = db.execute(statement)
         res = generate_table_return_result(res)
         return res, 200 # example: [{'name': 'Bedok MRT'}, {'name': 'Tampines MRT'}, {'name': 'City Hall MRT'},...
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
 
 def top_up(email,amount):
@@ -45,7 +49,8 @@ def top_up(email,amount):
         statement = sqlalchemy.text(f"UPDATE users SET balance=balance-{amount} WHERE email_address = \'{email}\';")
         db.execute(statement)
         return True, 200 # returns nothing.
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
 
 def current_borrows(email):
@@ -69,13 +74,12 @@ def current_borrows(email):
 
 def loaned_umbrellas(email):
     try:
+        print(email)
         statement = sqlalchemy.text(f"""
-            SELECT u.id, u.colour, u.size, s.name AS location, COUNT(l.end_date) AS is_borrowed
-            FROM umbrellas u, stations s, loans l
+            SELECT u.id, u.colour, u.size, s.name AS location, False
+            FROM umbrellas u, stations s
             WHERE u.location = s.id
-            AND l.umbrella_id = u.id
-            AND u.owner = \'{email}\'
-            GROUP BY (u.id, u.colour, u.size, s.name);
+            AND u.owner = \'{email}\';
         """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
@@ -95,7 +99,8 @@ def return_umbrella(loan_id,date,return_location): #jesus christ also for this s
         statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id}; UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\'; UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';") #need to convert days to int because its some weird format
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
 
 def make_report(umbrella_id,reporter,details,date):
@@ -103,32 +108,60 @@ def make_report(umbrella_id,reporter,details,date):
         statement = sqlalchemy.text(f"INSERT INTO reports (umbrella_id, reporter, details, date) VALUES ({umbrella_id},\'{reporter}\', \'{details}\', \'{date}\');")
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400  
 
 # 
 # loan an umbrella
 # 
 
-def loan_umbrella(email,colour, size,location): #need first name last name in frontend btw
+def get_location_id(location_name):
     try:
+        statement = sqlalchemy.text(f"""
+            SELECT s.id
+            FROM stations s
+            WHERE s.name = '{location_name}';
+        """)
+        res = db.execute(statement).fetchone()
+        return res[0]
+    except Exception as e:
+        print(e)
+        return -1
+
+def loan_umbrella(email, colour, size, location_name): #need first name last name in frontend btw
+    try:
+        location = get_location_id(location_name)
         statement = sqlalchemy.text(f"INSERT INTO umbrellas (colour, size, owner, location) VALUES (\'{colour}\', {size}, \'{email}\',{location});")
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
     
 # 
 # borrow an umbrella
 # 
 
-def which_umbrella(location):
+def which_umbrella(location_name):
     try:
-        statement = sqlalchemy.text(f"SELECT id FROM umbrellas WHERE location = {location} AND id NOT IN(SELECT umbrella_id FROM loans WHERE end_date ISNULL and location = {location});") ## technically, I guess we don't need the second location check...
+        location = get_location_id(location_name)
+        statement = sqlalchemy.text(f"""
+            SELECT u.id, u.colour, u.size, us.first_name || ' ' || us.last_name as name 
+            FROM umbrellas u, users us
+            WHERE location = {location} 
+            AND u.owner = us.email_address
+            AND u.id NOT IN (
+                SELECT umbrella_id 
+                FROM loans 
+                WHERE end_date ISNULL 
+                AND location = {location});
+        """) ## technically, I guess we don't need the second location check...
         res = db.execute(statement)
         res = generate_table_return_result(res)
         return res, 200 #returns umbrellas which aren't on loan from a specific location
-    except:
+    except Exception as e:
+        print(e)
         return False, 400 
 
 def borrow_umbrella(umbrella_id,borrower,date):
@@ -136,7 +169,8 @@ def borrow_umbrella(umbrella_id,borrower,date):
         statement = sqlalchemy.text(f"INSERT INTO loans (umbrella_id, borrower, start_date, end_date) VALUES ({umbrella_id}, \'{borrower}\',\'{date}\',null);") 
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400 
 # 
 # admin
@@ -148,7 +182,8 @@ def reports():
         res = db.execute(statement)
         res = generate_table_return_result(res)
         return res, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400 
 
 def ban(email):
@@ -156,7 +191,8 @@ def ban(email):
         statement = sqlalchemy.text(f"UPDATE users SET is_banned = TRUE WHERE email_address = \'{email}\';") #surprisingly enough boolean isnt caps sensitive...
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
     
 def unban(email):
@@ -164,7 +200,8 @@ def unban(email):
         statement = sqlalchemy.text(f"UPDATE users SET is_banned = FALSE WHERE email_address = \'{email}\';")
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
 
 def update_location(id,name):
@@ -172,7 +209,8 @@ def update_location(id,name):
         statement = sqlalchemy.text(f"UPDATE stations SET name=\'{name}\' WHERE id = \'{id}\';")
         db.execute(statement)
         return True, 200
-    except:
+    except Exception as e:
+        print(e)
         return False, 400
 
 
