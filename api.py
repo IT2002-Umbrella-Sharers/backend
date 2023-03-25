@@ -76,7 +76,13 @@ def loaned_umbrellas(email):
     try:
         print(email)
         statement = sqlalchemy.text(f"""
-            SELECT u.id, u.colour, u.size, s.name AS location, False
+            SELECT u.id, u.colour, u.size, s.name AS location, EXISTS (
+                SELECT True 
+                FROM loans l, umbrellas um
+                WHERE um.owner = \'{email}\'
+                AND l.umbrella_id = um.id
+                AND l.end_date ISNULL
+            )
             FROM umbrellas u, stations s
             WHERE u.location = s.id
             AND u.owner = \'{email}\';
