@@ -119,7 +119,8 @@ def getumbrella():
 
 @app.route('/borrowumbrella', methods=["POST"])
 def borrowumbrella():
-    umbrellaid = request.form['umbrellaid']
+    print(request)
+    umbrellaid = int(request.form['umbrellaid'])
     borrower = request.form['borrower']
     date = request.form['date']
     res = borrow_umbrella(
