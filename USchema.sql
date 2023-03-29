@@ -5,7 +5,7 @@
 ********************/
 
 CREATE TABLE IF NOT EXISTS users (
-	email_address CHAR(64) PRIMARY KEY,
+	email_address VARCHAR(64) PRIMARY KEY,
 	first_name VARCHAR(32) NOT NULL,
 	last_name VARCHAR(32) NOT NULL,
 	password VARCHAR(64) NOT NULL,
