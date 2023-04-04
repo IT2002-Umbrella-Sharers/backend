@@ -154,6 +154,19 @@ def updatelocation():
     res = update_location(id, name)
     return create_response(res)
 
+@app.route('/getbalance', methods=["POST"])
+def getbalance():
+    id = request.form['id']
+    res = get_balance(id)
+    return create_response(res)
+
+@app.route('/addbalance', methods=['POST'])
+def addbalance():
+    id = request.form['id']
+    amount = request.form['amount']
+    res = add_balance(id, amount)
+    return create_response(res)
+
 @app.route('/<path:path>')
 def catch_all(path):
     return f"The path {path} is not found."

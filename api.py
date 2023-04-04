@@ -178,6 +178,36 @@ def borrow_umbrella(umbrella_id,borrower,date):
     except Exception as e:
         print(e)
         return False, 400 
+
+# account
+
+def get_balance(id):
+    try:
+        statement = sqlalchemy.text(f"""
+            SELECT u.balance 
+            FROM users u
+            WHERE u.email_address = '{id}';
+        """)
+        res = db.execute(statement)
+        res = generate_table_return_result(res)
+        return res, 200
+    except Exception as e:
+        print(e)
+        return False, 400
+
+def add_balance(id, amount):
+    try:
+        statement = sqlalchemy.text(f"""
+            UPDATE users
+            SET balance = balance + {amount}
+            WHERE email_address = '{id}';
+        """)
+        db.execute(statement)
+        return True, 200
+    except Exception as e:
+            print(e)
+            return False, 400
+
 # 
 # admin
 # 
