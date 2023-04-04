@@ -99,7 +99,7 @@ def return_umbrella(loan_id,date,location_name): #jesus christ also for this sta
         statement = sqlalchemy.text(f"""
             UPDATE loans 
             SET end_date = \'{date}\' 
-            WHERE umbrella_id = {loan_id};
+            WHERE id = {loan_id};
         """)
         db.execute(statement)
         statement = sqlalchemy.text(f"""
@@ -111,17 +111,19 @@ def return_umbrella(loan_id,date,location_name): #jesus christ also for this sta
         data = db.execute(statement)
         data = generate_table_return_result(data)
         umbrella_id, borrower_email, owner_email, days = data[0]['umbrella_id'],data[0]['borrower'],data[0]['owner'],data[0]['days']
+        if days is None:
+            days = 1
         statement = sqlalchemy.text(f"""
             UPDATE umbrellas 
             SET location = {return_location} 
-            WHERE id = {umbrella_id}; 
+            WHERE id = {umbrella_id};
             UPDATE users 
-            SET balance = balance-{int(days)*0.1} 
+            SET balance = balance - {int(days) * 0.1}
             WHERE email_address = \'{borrower_email}\'; 
             UPDATE users 
-            SET balance = balance+{int(days)*0.07} 
+            SET balance = balance + {int(days) * 0.07}
             WHERE email_address = \'{owner_email}\';
-        """) #need to convert days to int because its some weird format
+        """)
         db.execute(statement)
         return True, 200
     except Exception as e:
