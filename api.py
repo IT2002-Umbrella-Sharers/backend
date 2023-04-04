@@ -74,7 +74,6 @@ def current_borrows(email):
 
 def loaned_umbrellas(email):
     try:
-        print(email)
         statement = sqlalchemy.text(f"""
             SELECT u.id, u.colour, u.size, s.name AS location, EXISTS (
                 SELECT True 
@@ -94,15 +93,35 @@ def loaned_umbrellas(email):
         print(e)
         return False, 400
         
-def return_umbrella(loan_id,date,return_location): #jesus christ also for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
+def return_umbrella(loan_id,date,location_name): #jesus christ also for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
     try:
-        statement = sqlalchemy.text(f'UPDATE loans SET end_date = \'{date}\' WHERE id = {loan_id};')
+        return_location = get_location_id(location_name)
+        statement = sqlalchemy.text(f"""
+            UPDATE loans 
+            SET end_date = \'{date}\' 
+            WHERE umbrella_id = {loan_id};
+        """)
         db.execute(statement)
-        statement = sqlalchemy.text(f"SELECT l.umbrella_id, l.borrower, u.owner, EXTRACT(DAY from end_date-start_date)+1 as days FROM loans l, umbrellas u WHERE l.id = {loan_id} AND l.umbrella_id = u.id;")
+        statement = sqlalchemy.text(f"""
+            SELECT l.umbrella_id, l.borrower, u.owner, EXTRACT(DAY from end_date-start_date)+1 as days 
+            FROM loans l, umbrellas u 
+            WHERE l.id = {loan_id} 
+            AND l.umbrella_id = u.id;
+        """)
         data = db.execute(statement)
         data = generate_table_return_result(data)
         umbrella_id, borrower_email, owner_email, days = data[0]['umbrella_id'],data[0]['borrower'],data[0]['owner'],data[0]['days']
-        statement = sqlalchemy.text(f"UPDATE umbrellas SET location = {return_location} WHERE id = {umbrella_id}; UPDATE users SET balance = balance-{int(days)*0.1} WHERE email_address = \'{borrower_email}\'; UPDATE users SET balance = balance+{int(days)*0.07} WHERE email_address = \'{owner_email}\';") #need to convert days to int because its some weird format
+        statement = sqlalchemy.text(f"""
+            UPDATE umbrellas 
+            SET location = {return_location} 
+            WHERE id = {umbrella_id}; 
+            UPDATE users 
+            SET balance = balance-{int(days)*0.1} 
+            WHERE email_address = \'{borrower_email}\'; 
+            UPDATE users 
+            SET balance = balance+{int(days)*0.07} 
+            WHERE email_address = \'{owner_email}\';
+        """) #need to convert days to int because its some weird format
         db.execute(statement)
         return True, 200
     except Exception as e:

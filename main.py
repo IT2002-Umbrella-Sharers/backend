@@ -44,7 +44,6 @@ def login():
         email,
         password
     )
-    print(res)
     return create_response(res)
 
 @app.route('/getlocations', methods=["GET"])
@@ -75,9 +74,10 @@ def getloans():
 
 @app.route('/returnumbrella', methods=["POST"])
 def returnumbrella():
-    loanid = request.form['loanid']
+    loanid = int(request.form['loanid'])
     date = request.form['date']
     returnlocation = request.form['returnlocation']
+    print(loanid, date, returnlocation)
     res = return_umbrella(loanid, date, returnlocation)
     return create_response(res)
 
@@ -119,7 +119,6 @@ def getumbrella():
 
 @app.route('/borrowumbrella', methods=["POST"])
 def borrowumbrella():
-    print(request)
     umbrellaid = int(request.form['umbrellaid'])
     borrower = request.form['borrower']
     date = request.form['date']
