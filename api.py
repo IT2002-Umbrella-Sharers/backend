@@ -46,7 +46,7 @@ def get_locations(): # getting names of current location on login
 
 def top_up(email,amount):
     try:
-        statement = sqlalchemy.text(f"UPDATE users SET balance=balance-{amount} WHERE email_address = \'{email}\';")
+        statement = sqlalchemy.text(f"UPDATE users SET balance=balance+{amount} WHERE email_address = \'{email}\';")
         db.execute(statement)
         return True, 200 # returns nothing.
     except Exception as e:
