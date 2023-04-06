@@ -1,5 +1,4 @@
 import sqlalchemy
-# a lot of this is assuming you send in info in single variables, I'll work on making general functions for creating statements later
 
 YOUR_POSTGRES_PASSWORD = "a"
 connection_string = f"postgresql://postgres:{YOUR_POSTGRES_PASSWORD}@localhost/umbrella"
@@ -23,9 +22,9 @@ def check_result_login(email,password): ##for logging in
         return {'user': res[0]}, 200 # returns a list containing a single dictionary with user details
     except Exception as e:
         print(e)
-        return False, 400 #honestly not sure why this is here but just in case - if you obtain from 
+        return False, 400 
 
-def check_result_register(email,password,first_name,last_name): #need first name last name in frontend btw
+def check_result_register(email,password,first_name,last_name): 
     try:
         statement = sqlalchemy.text(f"INSERT INTO USERS (email_address,first_name,last_name,password) VALUES(\'{email}\',\'{first_name}\',\'{last_name}\',\'{password}\');")
         db.execute(statement)
@@ -90,7 +89,7 @@ def loaned_umbrellas(email):
         print(e)
         return False, 400
         
-def return_umbrella(loan_id,date,location_name): #jesus christ also for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
+def return_umbrella(loan_id,date,location_name): #for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
     try:
         return_location = get_location_id(location_name)
         statement = sqlalchemy.text(f"""
@@ -153,7 +152,7 @@ def get_location_id(location_name):
         print(e)
         return -1
 
-def loan_umbrella(email, colour, size, location_name): #need first name last name in frontend btw
+def loan_umbrella(email, colour, size, location_name): 
     try:
         location = get_location_id(location_name)
         statement = sqlalchemy.text(f"INSERT INTO umbrellas (colour, size, owner, location) VALUES (\'{colour}\', {size}, \'{email}\',{location});")
@@ -180,7 +179,7 @@ def which_umbrella(location_name):
                 FROM loans 
                 WHERE end_date ISNULL 
                 AND location = {location});
-        """) ## technically, I guess we don't need the second location check...
+        """) 
         res = db.execute(statement)
         res = generate_table_return_result(res)
         return res, 200 #returns umbrellas which aren't on loan from a specific location
