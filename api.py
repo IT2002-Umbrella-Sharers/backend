@@ -43,16 +43,6 @@ def get_locations(): # getting names of current location on login
     except Exception as e:
         print(e)
         return False, 400
-
-def top_up(email,amount):
-    try:
-        statement = sqlalchemy.text(f"UPDATE users SET balance=balance+{amount} WHERE email_address = \'{email}\';")
-        db.execute(statement)
-        return True, 200 # returns nothing.
-    except Exception as e:
-        print(e)
-        return False, 400
-
 def current_borrows(email):
     try:
         statement = sqlalchemy.text(f"""
@@ -86,9 +76,9 @@ def loaned_umbrellas(email):
             FROM umbrellas u, stations s
             WHERE u.location = s.id
             AND u.owner = \'{email}\'
-            AND NOT EXISTS(
-	            SELECT TRUE
-	            FROM loans l
+            AND u.id NOT IN(
+	            SELECT u.id
+	            FROM loans l, umbrellas u
 	            WHERE u.owner = \'{email}\'
 	            AND u.id = l.umbrella_id
 	            AND end_date ISNULL);
