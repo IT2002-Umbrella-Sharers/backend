@@ -75,16 +75,23 @@ def current_borrows(email):
 def loaned_umbrellas(email):
     try:
         statement = sqlalchemy.text(f"""
-            SELECT u.id, u.colour, u.size, s.name AS location, EXISTS (
-                SELECT True 
-                FROM loans l, umbrellas um
-                WHERE um.owner = \'{email}\'
-                AND l.umbrella_id = um.id
-                AND l.end_date ISNULL
-            )
+            SELECT DISTINCT u.id, u.colour, u.size, s.name AS location, TRUE AS on_loan
+            FROM umbrellas u, stations s, loans l
+            WHERE u.location = s.id
+            AND u.owner = \'{email}\'
+            AND u.id = l.umbrella_id
+            AND end_date ISNULL
+            UNION
+            SELECT DISTINCT u.id, u.colour, u.size, s.name AS location, FALSE AS on_loan
             FROM umbrellas u, stations s
             WHERE u.location = s.id
-            AND u.owner = \'{email}\';
+            AND u.owner = \'{email}\'
+            AND NOT EXISTS(
+	            SELECT TRUE
+	            FROM loans l
+	            WHERE u.owner = \'{email}\'
+	            AND u.id = l.umbrella_id
+	            AND end_date ISNULL);
         """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
