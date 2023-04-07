@@ -12,36 +12,73 @@ db = engine.connect()
 # login
 #
 
-def check_result_login(email,password): ##for logging in
+def check_result_login(email,password):
     try:
-        statement = sqlalchemy.text(f"SELECT * FROM users WHERE email_address = \'{email}\' AND password = \'{password}\';")
+        statement = sqlalchemy.text(f"""
+            SELECT * 
+            FROM users 
+            WHERE email_address = \'{email}\' 
+            AND password = \'{password}\';
+        """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
         if len(res) == 0:
             return False, 400
-        return {'user': res[0]}, 200 # returns a list containing a single dictionary with user details
+        return {'user': res[0]}, 200
     except Exception as e:
         print(e)
         return False, 400 
 
 def check_result_register(email,password,first_name,last_name): 
     try:
-        statement = sqlalchemy.text(f"INSERT INTO USERS (email_address,first_name,last_name,password) VALUES(\'{email}\',\'{first_name}\',\'{last_name}\',\'{password}\');")
+        statement = sqlalchemy.text(f"""
+            INSERT INTO USERS (email_address,first_name,last_name,password) 
+            VALUES(\'{email}\',\'{first_name}\',\'{last_name}\',\'{password}\');
+        """)
         db.execute(statement)
         return True, 200
     except Exception as e:
         print(e)
-        return False, 400 #catches if cannot insert into database for whatever reason
+        return False, 400
 
-def get_locations(): # getting names of current location on login
+def get_locations():
     try:
         statement = sqlalchemy.text(f"SELECT name FROM stations;")
         res = db.execute(statement)
         res = generate_table_return_result(res)
-        return res, 200 # example: [{'name': 'Bedok MRT'}, {'name': 'Tampines MRT'}, {'name': 'City Hall MRT'},...
+        return res, 200
     except Exception as e:
         print(e)
         return False, 400
+
+def get_banned_status(email):
+    try:
+        statement = sqlalchemy.text(f"""
+            SELECT u.is_banned
+            FROM users u
+            WHERE u.email_address = '{email}';
+        """)
+        res = db.execute(statement)
+        res = generate_table_return_result(res)
+        return res, 200
+    except Exception as e:
+        print(e)
+        return False, 400
+
+def get_admin_status(email):
+    try:
+        statement = sqlalchemy.text(f"""
+            SELECT u.is_admin
+            FROM users u
+            WHERE u.email_address = '{email}';
+        """)
+        res = db.execute(statement)
+        res = generate_table_return_result(res)
+        return res, 200
+    except Exception as e:
+        print(e)
+        return False, 400
+
 def current_borrows(email):
     try:
         statement = sqlalchemy.text(f"""
@@ -56,7 +93,7 @@ def current_borrows(email):
         """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
-        return res, 200 #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
+        return res, 200
     except Exception as e:
         print(e)
         return False, 400
@@ -84,12 +121,12 @@ def loaned_umbrellas(email):
         """)
         res = db.execute(statement)
         res = generate_table_return_result(res)
-        return res, 200 #note: Python converts SQL timestamp object into datetime.datetime also this returns the station you borrowed from
+        return res, 200
     except Exception as e:
         print(e)
         return False, 400
         
-def return_umbrella(loan_id,date,location_name): #for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
+def return_umbrella(loan_id,date,location_name):
     try:
         return_location = get_location_id(location_name)
         statement = sqlalchemy.text(f"""
@@ -128,7 +165,10 @@ def return_umbrella(loan_id,date,location_name): #for this statement to work, da
 
 def make_report(umbrella_id,reporter,details,date):
     try:
-        statement = sqlalchemy.text(f"INSERT INTO reports (umbrella_id, reporter, details, date) VALUES ({umbrella_id},\'{reporter}\', \'{details}\', \'{date}\');")
+        statement = sqlalchemy.text(f"""
+            INSERT INTO reports (umbrella_id, reporter, details, date) 
+            VALUES ({umbrella_id},\'{reporter}\', \'{details}\', \'{date}\');
+        """)
         db.execute(statement)
         return True, 200
     except Exception as e:
@@ -155,7 +195,10 @@ def get_location_id(location_name):
 def loan_umbrella(email, colour, size, location_name): 
     try:
         location = get_location_id(location_name)
-        statement = sqlalchemy.text(f"INSERT INTO umbrellas (colour, size, owner, location) VALUES (\'{colour}\', {size}, \'{email}\',{location});")
+        statement = sqlalchemy.text(f"""
+            INSERT INTO umbrellas (colour, size, owner, location) 
+            VALUES (\'{colour}\', {size}, \'{email}\',{location});
+        """)
         db.execute(statement)
         return True, 200
     except Exception as e:
@@ -182,14 +225,17 @@ def which_umbrella(location_name):
         """) 
         res = db.execute(statement)
         res = generate_table_return_result(res)
-        return res, 200 #returns umbrellas which aren't on loan from a specific location
+        return res, 200
     except Exception as e:
         print(e)
         return False, 400 
 
 def borrow_umbrella(umbrella_id,borrower,date):
     try:
-        statement = sqlalchemy.text(f"INSERT INTO loans (umbrella_id, borrower, start_date, end_date) VALUES ({umbrella_id}, \'{borrower}\',\'{date}\',null);") 
+        statement = sqlalchemy.text(f"""
+            INSERT INTO loans (umbrella_id, borrower, start_date, end_date) 
+            VALUES ({umbrella_id}, \'{borrower}\',\'{date}\',null);
+        """) 
         db.execute(statement)
         return True, 200
     except Exception as e:
@@ -227,7 +273,23 @@ def add_balance(id, amount):
 
 # 
 # admin
-# 
+#
+
+def retrieve_users():
+    try:
+        statement = sqlalchemy.text(f"""
+            SELECT u.email_address, u.first_name || ' ' || u.last_name as name, 
+                u.is_banned
+            FROM users u
+            WHERE u.is_admin IS NOT TRUE
+            ORDER BY u.email_address; 
+        """)
+        res = db.execute(statement)
+        res = generate_table_return_result(res)
+        return res, 200
+    except Exception as e:
+        print(e)
+        return False, 200
 
 def reports():
     try:
@@ -239,18 +301,26 @@ def reports():
         print(e)
         return False, 400 
 
-def ban(email):
+def submit_ban(email):
     try:
-        statement = sqlalchemy.text(f"UPDATE users SET is_banned = TRUE WHERE email_address = \'{email}\';") #surprisingly enough boolean isnt caps sensitive...
+        statement = sqlalchemy.text(f"""
+            UPDATE users 
+            SET is_banned = TRUE 
+            WHERE email_address = \'{email}\';
+        """)
         db.execute(statement)
         return True, 200
     except Exception as e:
         print(e)
         return False, 400
     
-def unban(email):
+def submit_unban(email):
     try:
-        statement = sqlalchemy.text(f"UPDATE users SET is_banned = FALSE WHERE email_address = \'{email}\';")
+        statement = sqlalchemy.text(f"""
+            UPDATE users 
+            SET is_banned = FALSE 
+            WHERE email_address = \'{email}\';
+        """)
         db.execute(statement)
         return True, 200
     except Exception as e:
@@ -267,7 +337,7 @@ def update_location(id,name):
         return False, 400
 
 
-def generate_table_return_result(res): # returns a list containing several dictionaries depending on query size - keys are column names and values are...values
+def generate_table_return_result(res):
     rows = []
     columns = list(res.keys())
     for row_number, row in enumerate(res):

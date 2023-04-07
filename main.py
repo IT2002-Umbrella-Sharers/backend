@@ -51,11 +51,23 @@ def getlocations():
     res = get_locations()
     return create_response(res)
 
+@app.route('/isbanned', methods=["POST"])
+def isbanned():
+    email = request.form['email']
+    res = get_banned_status(email)
+    return create_response(res)
+
+@app.route('/isadmin', methods=["POST"])
+def isadmin():
+    email = request.form['email']
+    res = get_admin_status(email)
+    return create_response(res)
+
 @app.route('/topup', methods=["POST"])
 def topup():
     email = request.form['email']
     amount = request.form['amount']
-    res = top_up(email, amount)
+    res = add_balance(email, amount)
     return create_response(res)
 
 # Get loans for umbrellas borrowed from other users
@@ -77,7 +89,6 @@ def returnumbrella():
     loanid = int(request.form['loanid'])
     date = request.form['date']
     returnlocation = request.form['returnlocation']
-    print(loanid, date, returnlocation)
     res = return_umbrella(loanid, date, returnlocation)
     return create_response(res)
 
@@ -129,6 +140,11 @@ def borrowumbrella():
     )
     return create_response(res)
 
+@app.route('/getusers', methods=['GET'])
+def getusers():
+    res = retrieve_users()
+    return create_response(res)
+
 @app.route('/getreports', methods=["POST"])
 def getreports():
     res = reports()
@@ -137,13 +153,13 @@ def getreports():
 @app.route('/ban', methods=["POST"])
 def ban():
     email = request.form['email']
-    res = ban(email)
+    res = submit_ban(email)
     return create_response(res)
 
 @app.route('/unban', methods=["POST"])
 def unban():
     email = request.form['email']
-    res = unban(email)
+    res = submit_unban(email)
     return create_response(res)
 
 @app.route('/updatelocation', methods=["POST"])

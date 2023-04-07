@@ -1,5 +1,5 @@
 INSERT INTO users (email_address, first_name, last_name, password, balance, is_admin, is_banned) VALUES ('admin@admin.com', 'Ad', 'Min', 'password', 0.00, TRUE, FALSE);
-INSERT INTO users (email_address, first_name, last_name, password, balance, is_admin, is_banned) VALUES ('ShennaCrespo@hotmail.com', 'Shenna', 'Crespo', 'RAQRJ3BR', 3.8044673390674077, FALSE, FALSE);
+INSERT INTO users (email_address, first_name, last_name, password, balance, is_admin, is_banned) VALUES ('ShennaCrespo@hotmail.com', 'Shenna', 'Crespo', 'RAQRJ3BR', 3.8044673390674077, FALSE, TRUE);
 INSERT INTO users (email_address, first_name, last_name, password, balance, is_admin, is_banned) VALUES ('WallacePhair@yahoo.com', 'Wallace', 'Phair', 'VNKYQYXE', 38.39189069719953, FALSE, FALSE);
 INSERT INTO users (email_address, first_name, last_name, password, balance, is_admin, is_banned) VALUES ('CarmellaGarlington@hotmail.com', 'Carmella', 'Garlington', 'BAE7KN6L', 27.449109200620274, FALSE, FALSE);
 INSERT INTO users (email_address, first_name, last_name, password, balance, is_admin, is_banned) VALUES ('VictorAter@aol.com', 'Victor', 'Ater', 'LS48IBKV', 3.601738636748392, FALSE, FALSE);
