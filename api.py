@@ -89,9 +89,9 @@ def loaned_umbrellas(email):
         print(e)
         return False, 400
         
-def return_umbrella(loan_id,date,location_id): #for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
+def return_umbrella(loan_id,date,location_name): #for this statement to work, date needs to be a string in this format:"YYYY-MM-DD HH:MM:SS", same for the others
     try:
-        return_location = get_location_id(location_id)
+        return_location = get_location_id(location_name)
         statement = sqlalchemy.text(f"""
             UPDATE loans 
             SET end_date = \'{date}\' 
@@ -139,12 +139,12 @@ def make_report(umbrella_id,reporter,details,date):
 # loan an umbrella
 # 
 
-def get_location_id(location_id):
+def get_location_id(location_name):
     try:
         statement = sqlalchemy.text(f"""
             SELECT s.id
             FROM stations s
-            WHERE s.name = '{location_id}';
+            WHERE s.name = '{location_name}';
         """)
         res = db.execute(statement).fetchone()
         return res[0]
@@ -152,9 +152,9 @@ def get_location_id(location_id):
         print(e)
         return -1
 
-def loan_umbrella(email, colour, size, location_id): 
+def loan_umbrella(email, colour, size, location_name): 
     try:
-        location = get_location_id(location_id)
+        location = get_location_id(location_name)
         statement = sqlalchemy.text(f"INSERT INTO umbrellas (colour, size, owner, location) VALUES (\'{colour}\', {size}, \'{email}\',{location});")
         db.execute(statement)
         return True, 200
@@ -166,9 +166,9 @@ def loan_umbrella(email, colour, size, location_id):
 # borrow an umbrella
 # 
 
-def which_umbrella(location_id):
+def which_umbrella(location_name):
     try:
-        location = get_location_id(location_id)
+        location = get_location_id(location_name)
         statement = sqlalchemy.text(f"""
             SELECT u.id, u.colour, u.size, us.first_name || ' ' || us.last_name as name 
             FROM umbrellas u, users us
